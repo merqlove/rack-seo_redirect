@@ -56,19 +56,25 @@ Your can pass *true* or *false* as a parameter to *TrailingSlash* middleware. Th
 
 For adding */* to the end of urls use:
 
-    use Rack::SeoRedirect::TrailingSlash, true
+    use Rack::SeoRedirect::TrailingSlash, path_with_slash: true
 
 For removing */* from the end of urls use:
 
-    use Rack::SeoRedirect::TrailingSlash, false
+    use Rack::SeoRedirect::TrailingSlash, path_with_slash: false
 
 Default is *false* (removing trailing slash).
 
 For removing */* from the end of url queries use:
 
-    use Rack::SeoRedirect::TrailingSlash, false, true
+    use Rack::SeoRedirect::TrailingSlash, query_without_slash: true
 
-Default is *false* (removing trailing slash from queries).
+Default is *false* (not removing trailing slash from queries).
+
+For exclude some paths by `Regexp` use:
+
+    use Rack::SeoRedirect::TrailingSlash, exclude: [/\A^\/users/]
+
+Default is *[]* (nothing excluded).
 
 ## Contributing
 

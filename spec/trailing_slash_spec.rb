@@ -8,7 +8,7 @@ describe Rack::SeoRedirect::TrailingSlash do
     let(:app) { Rack::SeoRedirect::TrailingSlash.new(base) }
 
     it 'set @should_ends_with_slash to false' do
-      app.instance_variable_get('@should_ends_with_slash').should be_falsey
+      app.instance_variable_get('@opts').should == Rack::SeoRedirect::TrailingSlash::DEFAULT_OPTIONS
     end
 
     it 'removes trailing slash' do
@@ -19,7 +19,7 @@ describe Rack::SeoRedirect::TrailingSlash do
   end
 
   context "with trailing slash" do
-    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, true) }
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base,  path_with_slash: true, query_without_slash: false, exclude:[]) }
 
     it 'adds slash' do
       get 'http://example.com/users'
@@ -47,8 +47,17 @@ describe Rack::SeoRedirect::TrailingSlash do
     end
   end
 
+  context "with excluded paths" do
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, path_with_slash: false, query_without_slash: false, exclude: [/\A^\/users/]) }
+
+    it 'does not do anything if path excluded' do
+      get 'http://example.com/users/?foo=bar'
+      last_response.status.should == 200
+    end
+  end
+
   context "without trailing slash" do
-    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, false, true) }
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, path_with_slash: false, query_without_slash: true, exclude:[]) }
 
     it 'removes slash' do
       get 'http://example.com/users/'

@@ -1,21 +1,30 @@
 module Rack
   module SeoRedirect
     class TrailingSlash < Base
-      def initialize app, slash = false, no_query_slash = false
+      PATH_REGEX = /\A(.*)\/\z/
+      QUERY_REGEX = /\A(.*)(\/|%2F)\z/
+      DEFAULT_OPTIONS = {
+        path_with_slash: false,
+        query_without_slash: false,
+        exclude: []
+      }
+
+      def initialize(app, opts = {})
         super(app)
-        @should_ends_with_slash = slash
-        @query_should_empty_slash = no_query_slash
+        @opts = opts.each_with_object(DEFAULT_OPTIONS) do |(key, value), o|
+          o[key] = value
+        end
       end
 
       def call env
         @env = env
         req = Rack::Request.new(env)
-        ends_with_slash = /\A(.*)\/\z/.match(req.path)
-        ends_query_with_slash = /\A(.*)%2F\z/.match(req.query_string)
+        ends_with_slash = PATH_REGEX.match(req.path)
+        ends_query_with_slash = QUERY_REGEX.match(req.query_string)
 
-        if req.get? && req.path != '/' && path_or_query_slash?(!ends_with_slash.nil?, !ends_query_with_slash.nil?)
-          path = @should_ends_with_slash ? "#{req.path}/" : without_slash(ends_with_slash, req.path)
-          query_string = @query_should_empty_slash ? without_slash(ends_query_with_slash, req.query_string) : req.query_string
+        if req.get? && req.path != '/' && path_or_query_slash?(!ends_with_slash.nil?, !ends_query_with_slash.nil?) && not_excluded_path?(req)
+          path = @opts[:path_with_slash] ? "#{req.path}/" : without_slash(ends_with_slash, req.path)
+          query_string = @opts[:query_without_slash] ? without_slash(ends_query_with_slash, req.query_string) : req.query_string
 
           url = build_url(:path => path, :query_string => query_string)
 
@@ -27,6 +36,10 @@ module Rack
     
       private
 
+      def not_excluded_path?(req) 
+        @opts[:exclude].any? { |path| path.match(req.path) if path.is_a?(Regexp) } == false
+      end
+        
       def without_slash(match, data)
         return data if match.nil?
         match.captures[0]
@@ -37,11 +50,11 @@ module Rack
       end
 
       def path_slash?(ends_with_slash)
-        @should_ends_with_slash != ends_with_slash
+        @opts[:path_with_slash] != ends_with_slash
       end
 
       def query_slash?(ends_with_slash)
-        @query_should_empty_slash && ends_with_slash
+        @opts[:query_without_slash] && ends_with_slash
       end
     end
   end
