@@ -56,7 +56,7 @@ Your can pass hash as a parameter to *TrailingSlash* middleware.
 
 For removing */* from the end of urls use:
 
-    use Rack::SeoRedirect::TrailingSlash, path_with_slash: false
+    use Rack::SeoRedirect::TrailingSlash, path_without_slash: true
 
 Default is *true* (removing trailing slash).
 
