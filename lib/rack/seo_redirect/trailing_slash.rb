@@ -6,7 +6,7 @@ module Rack
       PATH_REGEX = /\A(.*)\/\z/
       QUERY_REGEX = /\A(.*)(\/|%2F)\z/
       DEFAULT_OPTIONS = {
-        path_with_slash: false,
+        path_without_slash: true,
         query_without_slash: false,
         exclude: []
       }
@@ -29,7 +29,7 @@ module Rack
           ends_query_with_slash = QUERY_REGEX.match(req.query_string)
 
           if path_or_query_slash?(!ends_with_slash.nil?, !ends_query_with_slash.nil?)
-            path = opts[:path_with_slash] ? "#{req.path}/" : without_slash(ends_with_slash, req.path)
+            path = opts[:path_without_slash] ? without_slash(ends_with_slash, req.path) : req.path
             query_string = opts[:query_without_slash] ? without_slash(ends_query_with_slash, req.query_string) : req.query_string
 
             url = build_url(:path => path, :query_string => query_string)
@@ -65,7 +65,7 @@ module Rack
       end
 
       def path_slash?(ends_with_slash)
-        opts[:path_with_slash] != ends_with_slash
+        opts[:path_without_slash] && ends_with_slash
       end
 
       def query_slash?(ends_with_slash)

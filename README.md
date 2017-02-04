@@ -52,17 +52,13 @@ Default is *false* (www to non-www).
 
 ### Rack::SeoRedirect::TrailingSlash
 
-Your can pass *true* or *false* as a parameter to *TrailingSlash* middleware. This indicates either you need */* in the end of your url or not.
-
-For adding */* to the end of urls use:
-
-    use Rack::SeoRedirect::TrailingSlash, path_with_slash: true
+Your can pass hash as a parameter to *TrailingSlash* middleware.
 
 For removing */* from the end of urls use:
 
     use Rack::SeoRedirect::TrailingSlash, path_with_slash: false
 
-Default is *false* (removing trailing slash).
+Default is *true* (removing trailing slash).
 
 For removing */* from the end of url queries use:
 

@@ -19,22 +19,20 @@ describe Rack::SeoRedirect::TrailingSlash do
   end
 
   context "with trailing slash" do
-    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base,  path_with_slash: true, query_without_slash: false, exclude:[]) }
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base,  path_without_slash: false, query_without_slash: false, exclude:[]) }
 
-    it 'adds slash' do
-      get 'http://example.com/users'
-      last_response.status.should == 301
-      last_response.location.should == 'http://example.com/users/'
+    it 'saves slash' do
+      get 'http://example.com/users/'
+      last_response.status.should == 200
     end
 
-    it 'adds slash preserving port and path' do
-      get 'http://example.com:3000/users?foo=bar'
-      last_response.status.should == 301
-      last_response.location.should == 'http://example.com:3000/users/?foo=bar'
+    it 'saves slash preserving port and path' do
+      get 'http://example.com:3000/users/?foo=bar'
+      last_response.status.should == 200
     end
 
-    it 'does not do anything if slash is already in url' do
-      get 'http://example.com/users/?foo=bar'
+    it 'does not do anything if slash is already in query' do
+      get 'http://example.com/users/?foo=bar/'
       last_response.status.should == 200
     end
 
@@ -48,7 +46,7 @@ describe Rack::SeoRedirect::TrailingSlash do
   end
 
   context "with excluded paths" do
-    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, path_with_slash: false, query_without_slash: false, exclude: [/\A^\/users/]) }
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, path_without_slash: true, query_without_slash: false, exclude: [/\A^\/users/]) }
 
     it 'does not do anything if path excluded' do
       get 'http://example.com/users/?foo=bar'
@@ -57,7 +55,7 @@ describe Rack::SeoRedirect::TrailingSlash do
   end
 
   context "without trailing slash" do
-    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, path_with_slash: false, query_without_slash: true, exclude:[]) }
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, path_without_slash: true, query_without_slash: true, exclude:[]) }
 
     it 'removes slash' do
       get 'http://example.com/users/'
