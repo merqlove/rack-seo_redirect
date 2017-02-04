@@ -70,7 +70,7 @@ describe Rack::SeoRedirect::TrailingSlash do
     end
 
     it 'remove slash after path and query' do
-      get 'http://example.com:3000/users/?foo=bar'
+      get 'http://example.com:3000/users/?foo=bar/'
       last_response.status.should == 301
       last_response.location.should == 'http://example.com:3000/users?foo=bar'
     end
