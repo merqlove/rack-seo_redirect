@@ -1,6 +1,8 @@
 module Rack
   module SeoRedirect
     class TrailingSlash < Base
+      attr_reader :opts
+
       PATH_REGEX = /\A(.*)\/\z/
       QUERY_REGEX = /\A(.*)(\/|%2F)\z/
       DEFAULT_OPTIONS = {
@@ -16,28 +18,41 @@ module Rack
         end
       end
 
-      def call env
+      def call(env)
         @env = env
         req = Rack::Request.new(env)
-        ends_with_slash = PATH_REGEX.match(req.path)
-        ends_query_with_slash = QUERY_REGEX.match(req.query_string)
 
-        if req.get? && req.path != '/' && path_or_query_slash?(!ends_with_slash.nil?, !ends_query_with_slash.nil?) && not_excluded_path?(req)
-          path = @opts[:path_with_slash] ? "#{req.path}/" : without_slash(ends_with_slash, req.path)
-          query_string = @opts[:query_without_slash] ? without_slash(ends_query_with_slash, req.query_string) : req.query_string
-
-          url = build_url(:path => path, :query_string => query_string)
-
-          [ 301, headers(url), [ redirect_message(url) ] ]
+        if !valid_path?(req)
+          @app.call(env) 
         else
-          @app.call(env)
+          ends_with_slash = PATH_REGEX.match(req.path)
+          ends_query_with_slash = QUERY_REGEX.match(req.query_string)
+
+          if path_or_query_slash?(!ends_with_slash.nil?, !ends_query_with_slash.nil?)
+            path = opts[:path_with_slash] ? "#{req.path}/" : without_slash(ends_with_slash, req.path)
+            query_string = opts[:query_without_slash] ? without_slash(ends_query_with_slash, req.query_string) : req.query_string
+
+            url = build_url(:path => path, :query_string => query_string)
+
+            [ 301, headers(url), [ redirect_message(url) ] ]
+          else
+            @app.call(env)
+          end
         end
       end
     
       private
 
+      def valid_path?(req)
+         valid_request?(req) && not_excluded_path?(req)
+      end
+
       def not_excluded_path?(req) 
-        @opts[:exclude].any? { |path| path.match(req.path) if path.is_a?(Regexp) } == false
+        opts[:exclude].any? { |path| path.match(req.path) if path.is_a?(Regexp) } == false
+      end
+
+      def valid_request?(req)
+        req.get? && req.path != '/'
       end
         
       def without_slash(match, data)
@@ -50,11 +65,11 @@ module Rack
       end
 
       def path_slash?(ends_with_slash)
-        @opts[:path_with_slash] != ends_with_slash
+        opts[:path_with_slash] != ends_with_slash
       end
 
       def query_slash?(ends_with_slash)
-        @opts[:query_without_slash] && ends_with_slash
+        opts[:query_without_slash] && ends_with_slash
       end
     end
   end
