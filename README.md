@@ -64,6 +64,12 @@ For removing */* from the end of urls use:
 
 Default is *false* (removing trailing slash).
 
+For removing */* from the end of url queries use:
+
+    use Rack::SeoRedirect::TrailingSlash, false, true
+
+Default is *false* (removing trailing slash from queries).
+
 ## Contributing
 
 1. Fork it
