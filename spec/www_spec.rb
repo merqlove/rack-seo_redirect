@@ -8,7 +8,7 @@ describe Rack::SeoRedirect::Www do
     let(:app) { Rack::SeoRedirect::Www.new(base) }
 
     it 'set @should_starts_from_www to false' do
-      app.instance_variable_get('@should_starts_from_www').should be_false
+      app.instance_variable_get('@should_starts_from_www').should be_falsey
     end
 
     it 'removes www' do

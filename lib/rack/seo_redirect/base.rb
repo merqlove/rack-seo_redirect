@@ -27,6 +27,7 @@ module Rack
       def build_url options = {}
         options[:host] ||= request.host
         options[:path] ||= request.path
+        options[:query_string] ||= request.query_string
 
         url = "#{request.scheme}://#{options[:host]}"
 
@@ -36,7 +37,7 @@ module Rack
         end
 
         url << "#{options[:path]}"
-        url << "?#{request.query_string}" unless request.query_string.empty?
+        url << "?#{options[:query_string]}" unless options[:query_string].empty?
 
         url
       end

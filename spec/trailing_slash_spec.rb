@@ -8,7 +8,7 @@ describe Rack::SeoRedirect::TrailingSlash do
     let(:app) { Rack::SeoRedirect::TrailingSlash.new(base) }
 
     it 'set @should_ends_with_slash to false' do
-      app.instance_variable_get('@should_ends_with_slash').should be_false
+      app.instance_variable_get('@should_ends_with_slash').should be_falsey
     end
 
     it 'removes trailing slash' do
@@ -48,7 +48,7 @@ describe Rack::SeoRedirect::TrailingSlash do
   end
 
   context "without trailing slash" do
-    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, false) }
+    let(:app) { Rack::SeoRedirect::TrailingSlash.new(base, false, true) }
 
     it 'removes slash' do
       get 'http://example.com/users/'
@@ -56,7 +56,13 @@ describe Rack::SeoRedirect::TrailingSlash do
       last_response.location.should == 'http://example.com/users'
     end
 
-    it 'adds slash preserving port and path' do
+    it 'removes slash from port and path' do
+      get 'http://example.com:3000/users/?foo=bar'
+      last_response.status.should == 301
+      last_response.location.should == 'http://example.com:3000/users?foo=bar'
+    end
+
+    it 'remove slash after path and query' do
       get 'http://example.com:3000/users/?foo=bar'
       last_response.status.should == 301
       last_response.location.should == 'http://example.com:3000/users?foo=bar'
